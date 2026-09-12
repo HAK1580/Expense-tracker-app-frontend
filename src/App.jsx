@@ -8,8 +8,7 @@ import { useState } from 'react'
 
 function App() {
 
- const [balance,setBalance]=useState(25000);
- const [spent,setSpent]=useState(0);
+
  
 
 
@@ -18,8 +17,8 @@ function App() {
      <Routes>
       <Route path="/" element= {<Login />}   />
       <Route path="/login" element= {<Login />}   />
-      <Route path="/balance" element= {<Balance balance={balance} setBalance={setBalance} spent={spent} setSpent={setSpent} />}   />
-      <Route path="/dashboard" element= {<Dashboard balance={balance} setBalance={setBalance} spent={spent} setSpent={setSpent} />}   />
+      <Route path="/balance" element= {<Balance  />}   />
+      <Route path="/dashboard" element= {<Dashboard />}   />
     
     
      </Routes>
