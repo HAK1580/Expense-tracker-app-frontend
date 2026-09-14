@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true)
+  const [isLogin, setIsLogin] = useState(true);
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
   // Message state to store dynamic feedback text & type
   const [message, setMessage] = useState({ text: '', type: '' }) 
   const navigate = useNavigate()
@@ -36,7 +38,7 @@ const Auth = () => {
   const onSignupSubmit = async (data) => {
     setMessage({ text: '', type: '' })
     try {
-      const response = await axios.post("http://localhost:3000/api/user/sign-up", data)
+      const response = await axios.post(`${BASE_URL}/api/user/sign-up`, data)
       setMessage({
         text: response.data.message || "Account created successfully! Sign-in now ",
         type: "success"
@@ -56,7 +58,7 @@ const Auth = () => {
     setMessage({ text: '', type: '' })
     try {
   
-      const response = await axios.post("http://localhost:3000/api/user/sign-in", data)
+      const response = await axios.post(`${BASE_URL}/api/user/sign-in`, data)
        console.log(response.data);
        const token=response.data.token;
        const name=response.data.user_info.name
