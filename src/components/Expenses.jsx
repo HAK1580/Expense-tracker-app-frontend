@@ -2,11 +2,23 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import API from '../api'; // Centralized Axios Instance
+import axios from 'axios';
 
 // ---------------------------------------------------------
 // Shared constants / helpers
 // ---------------------------------------------------------
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const EXPENSES_ENDPOINT = `${BASE_URL}/api/expenses`;
+
+// Reads the token saved at login and builds the Authorization header
+// expected by the backend's auth middleware.
+const authConfig = () => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  };
+};
+
 const CATEGORIES = [
   { value: 'food', label: 'Food' },
   { value: 'transport', label: 'Transport' },
@@ -53,7 +65,7 @@ const AddExpenseForm = ({ onAdded, variant, onDone }) => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const response = await API.post('/api/expenses', data);
+      const response = await axios.post(EXPENSES_ENDPOINT, data, authConfig());
       onAdded(response.data, Number(data.price));
       notifySuccess('Expense added successfully!');
       reset();
@@ -214,7 +226,7 @@ const ExpenseRow = ({ expense, onDelete, onUpdate, variant }) => {
   const onSubmit = async (data) => {
     setIsSaving(true);
     try {
-      const response = await API.put(`/api/expenses/${expense._id}`, data);
+      const response = await axios.put(`${EXPENSES_ENDPOINT}/${expense._id}`, data, authConfig());
       onUpdate(expense._id, response.data);
       notifySuccess('Expense updated!');
       setIsEditing(false);
@@ -340,7 +352,7 @@ const Expenses = ({ balance, setBalance, setSpent, spent }) => {
     let isMounted = true;
     (async () => {
       try {
-        const response = await API.get('/api/expenses');
+        const response = await axios.get(EXPENSES_ENDPOINT, authConfig());
         if (isMounted) setExpenses(response.data);
       } catch (err) {
         console.error('Failed to load expenses:', err);
@@ -355,9 +367,24 @@ const Expenses = ({ balance, setBalance, setSpent, spent }) => {
   }, []);
 
   const handleDelete = async (_id) => {
+    const expenseToDelete = expenses.find((expense) => expense._id === _id);
+
     try {
-      await API.delete(`/api/expenses/${_id}`);
+      await axios.delete(`${EXPENSES_ENDPOINT}/${_id}`, authConfig());
       setExpenses((prev) => prev.filter((expense) => expense._id !== _id));
+
+      if (expenseToDelete) {
+        const price = Number(expenseToDelete.price);
+        // Deleting an expense gives the money back: spend goes down, balance goes up.
+        const updatespend = Math.max(0, spent - price);
+        const updatebalance = balance + price;
+
+        localStorage.setItem("balance", updatebalance);
+        localStorage.setItem("spend", updatespend);
+        setSpent(updatespend);
+        setBalance(updatebalance);
+      }
+
       notifySuccess('Expense deleted!');
     } catch (err) {
       console.error('Failed to delete expense:', err);
@@ -371,8 +398,13 @@ const Expenses = ({ balance, setBalance, setSpent, spent }) => {
 
   const handleAdded = (newExpense, price) => {
     setExpenses((prev) => [...prev, newExpense]);
-    setSpent(spent + price);
-    setBalance(balance - price);
+    const updatespend = spent + price;
+    const updatebalance = Math.max(0, balance - price);
+
+    localStorage.setItem("balance", updatebalance);
+    localStorage.setItem("spend", updatespend);
+    setSpent(updatespend);
+    setBalance(updatebalance);
   };
 
   return (
