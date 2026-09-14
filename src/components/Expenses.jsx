@@ -7,7 +7,7 @@ import axios from 'axios';
 // ---------------------------------------------------------
 // Shared constants / helpers
 // ---------------------------------------------------------
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const EXPENSES_ENDPOINT = `${BASE_URL}/api/expenses`;
 
 // Reads the token saved at login and builds the Authorization header

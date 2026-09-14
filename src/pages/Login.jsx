@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true``)
+  const [isLogin, setIsLogin] = useState(true)
   // Message state to store dynamic feedback text & type
   const [message, setMessage] = useState({ text: '', type: '' }) 
   const navigate = useNavigate()
